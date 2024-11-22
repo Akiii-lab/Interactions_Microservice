@@ -18,4 +18,15 @@ export class CommentDTO {
         this.comment = comment;
         this.created_at = created_at;
     }
+
+    /**
+     * json example
+     * {
+     *  "id": "id",
+     *  "id_room": "id_room",
+     *  "id_user": "id_user",
+     *  "comment": "comment",
+     *  "created_at": "created_at"
+     * }
+     */
 }

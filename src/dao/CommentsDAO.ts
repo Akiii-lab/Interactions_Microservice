@@ -14,6 +14,7 @@ import { DaoResponse, ErrorControl } from "../constants/ErrorControl";
 import { HttpStatusCode } from "axios";
 import { CommentDTO } from "../entities/DTO/CommentsDTO";
 import { CommentMapper } from "../entities/Mappers/CommentMapper";
+import { getDateTime } from "../utils/Time";
 
 config();
 
@@ -28,14 +29,24 @@ const db = firebaseService.getFirestoreInstance();
 export class CommentsDAO {
 	public static readonly COLLECTION = "comments";
 
+	private static getDataToSave(comment: Comment): any {
+		return {
+			id_room: comment.getId_room(),
+			id_user: comment.getId_user(),
+			comment: comment.getComment(),
+			created_at: getDateTime(),
+		};
+	}
+
 	// Add a new comment
 	protected static async add(data: CommentDTO): Promise<DaoResponse> {
 		try {
 			const commentToSave: Comment = CommentMapper.toEntity(data);
 			// Save comment
+			console.log(this.getDataToSave(commentToSave));
 			const docRef = await addDoc(
 				collection(db, CommentsDAO.COLLECTION),
-				commentToSave
+				this.getDataToSave(commentToSave)
 			);
 			log("Comment added with ID: %s", docRef.id);
 			return [ErrorControl.SUCCESS, docRef.id, HttpStatusCode.Created];
@@ -97,7 +108,7 @@ export class CommentsDAO {
 			}
 
 			const updatedData: Comment = CommentMapper.toEntity(data);
-			await updateDoc(docRef, { ...updatedData });
+			await updateDoc(docRef, { ...this.getDataToSave(updatedData) });
 
 			return [ErrorControl.SUCCESS, "Comment updated", HttpStatusCode.Ok];
 		} catch (error) {
